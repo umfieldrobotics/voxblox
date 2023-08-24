@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find bluerov_visualizer)/viz.rviz" />
+  <node name="barometer_converter" pkg="onr_utils" type="change_depth.py" output="log" />
+
+  <!-- Brindup robot from the folder bluerov_model -->
+  <arg name="model" default="$(find voxblox_ros)/bluerov_model/BlueRov2_IOWA.urdf.xacro" />
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+  <node
+      name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+      respawn="true" output="screen" />
+
+  <!-- Static transform between map and world -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_world" args="0 0 0 1 0 0 0 world NED" />
+
+  <!-- Static transform between world and camera -->
+  <node name="acoustics_visualizer" pkg="bluerov_visualizer" type="visualize_acoustics.py" output="screen" />
+
+  <node name="depth_visualizer" pkg="bluerov_visualizer" type="depth_visualizer_node" output="screen" />
+
+      
+  <node
+      name="left_comp2raw" pkg="image_transport" type="republish"
+      args="compressed in:=/zedm/zed_node/left/image_rect_color/ raw out:=/zedm/zed_node/left/image_rect_color/"
+      output="screen" />
+  <node name="right_comp2raw" pkg="image_transport" type="republish"
+      args="compressed in:=/zedm/zed_node/right/image_rect_color raw out:=/zedm/zed_node/right/image_rect_color"
+      output="screen" />
+
+  <!-- Download the dataset here: https://projects.asl.ethz.ch/datasets/doku.php?id=basement2018 -->
+
+  <node name="voxblox_node" pkg="voxblox_ros" type="tsdf_server" output="screen"
+    args="-alsologtostderr" clear_params="true">
+    <remap from="pointcloud" to="/pointcloud/registered_projection" />
+    <param name="tsdf_voxel_size" value="0.1" />
+    <param name="truncation_distance" value="0.5" />
+    <param name="color_mode" value="color" />
+    <param name="enable_icp" value="false" />
+    <param name="icp_refine_roll_pitch" value="false" />
+    <param name="update_mesh_every_n_sec" value="1.0" />
+    <param name="mesh_min_weight" value="2" />
+    <param name="method" value="fast" />
+    <param name="max_ray_length_m" value="10.0" />
+    <param name="use_const_weight" value="true" />
+    <param name="world_frame" value="world" />
+    <param name="verbose" value="true" />
+    <param name="mesh_filename" value="$(find voxblox_ros)/mesh_results/$(anon basement).ply" />
+  </node>
+
+</launch>
