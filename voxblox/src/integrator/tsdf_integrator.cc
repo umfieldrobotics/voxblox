@@ -229,6 +229,7 @@ float TsdfIntegratorBase::computeDistance(const Point& origin,
 
 // Thread safe.
 float TsdfIntegratorBase::getVoxelWeight(const Point& point_C) const {
+  // This is where the change in the weighing should be done.
   if (config_.use_const_weight) {
     return 1.0f;
   }
