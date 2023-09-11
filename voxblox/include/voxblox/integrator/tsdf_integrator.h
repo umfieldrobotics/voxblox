@@ -155,6 +155,12 @@ class TsdfIntegratorBase {
                        const Color& color, const float weight,
                        TsdfVoxel* tsdf_voxel);
 
+  // Update the voxel weight based on the distance to the surface of the acoustic points
+  void updateTsdfVoxelAcoustic(const Point& origin, const Point& point_G,
+                       const GlobalIndex& global_voxel_index,
+                       const Color& color, const float weight,
+                       TsdfVoxel* tsdf_voxel);
+
   /// Calculates TSDF distance, Thread safe.
   float computeDistance(const Point& origin, const Point& point_G,
                         const Point& voxel_center) const;
